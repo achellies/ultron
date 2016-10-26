@@ -1,0 +1,4 @@
+com.achellies.android.ultron.PatchUtils:6f88168efe3863ff9e1a0364f52d1a25207a83d2
+com.achellies.android.ultron.sample.MainActivity:a2f25727e8beb85593b8fee83feaca351ea35778
+com.achellies.android.ultron.sample.MyApplication:09705318fa8f1275b3115b4abd5658a360c341ab
+com.achellies.android.ultron.sample.TestModule:335bf53dee4e34abb5972239ce738df648289676
