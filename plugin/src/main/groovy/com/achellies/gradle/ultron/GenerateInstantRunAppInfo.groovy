@@ -2,13 +2,11 @@ package com.achellies.gradle.ultron;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable
-import com.android.build.gradle.internal.incremental.ByteCodeUtils;
+import com.android.build.gradle.internal2.incremental.ByteCodeUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-
-import java.io.IOException;
+import org.objectweb.asm.MethodVisitor
 
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACC_STATIC;

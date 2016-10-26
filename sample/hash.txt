@@ -1,4 +1,4 @@
-com.achellies.android.ultron.PatchUtils:6f88168efe3863ff9e1a0364f52d1a25207a83d2
-com.achellies.android.ultron.sample.MainActivity:a2f25727e8beb85593b8fee83feaca351ea35778
-com.achellies.android.ultron.sample.MyApplication:09705318fa8f1275b3115b4abd5658a360c341ab
-com.achellies.android.ultron.sample.TestModule:335bf53dee4e34abb5972239ce738df648289676
+com.achellies.android.ultron.PatchUtils:ed2d2ace28e232461506945f97cd6566b6fc9793
+com.achellies.android.ultron.sample.MainActivity:9ef931a7a5f77b787bea22aa09a39eddf317cb13
+com.achellies.android.ultron.sample.MyApplication:8214fa34e962e443c5560051331407604f7ba6fa
+com.achellies.android.ultron.sample.TestModule:f34835b08af1f4e2b96f1df5cb1b5ab31dbf4f94
