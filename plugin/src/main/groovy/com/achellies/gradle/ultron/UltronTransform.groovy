@@ -6,7 +6,7 @@ import com.android.build.api.transform.*
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.SdkHandler
-import com.android.build.gradle.internal.incremental.ByteCodeUtils
+import com.android.build.gradle.internal2.incremental.ByteCodeUtils
 import com.android.build.gradle.internal.pipeline.ExtendedContentType
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.pipeline.TransformTask
@@ -23,9 +23,9 @@ import com.google.common.base.Preconditions
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import com.google.common.collect.Sets
-import com.android.build.gradle.internal.incremental.IncrementalChangeVisitor
-import com.android.build.gradle.internal.incremental.IncrementalSupportVisitor
-import com.android.build.gradle.internal.incremental.IncrementalVisitor
+import com.android.build.gradle.internal2.incremental.IncrementalChangeVisitor
+import com.android.build.gradle.internal2.incremental.IncrementalSupportVisitor
+import com.android.build.gradle.internal2.incremental.IncrementalVisitor
 import javassist.ClassPool
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
