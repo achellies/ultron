@@ -81,10 +81,10 @@
 //    private static class VerificationResult {
 //
 //        @Nullable
-//        private final com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus changes;
+//        private final InstantRunVerifierStatus changes;
 //
 //        @VisibleForTesting
-//        VerificationResult(@Nullable com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus changes) {
+//        VerificationResult(@Nullable InstantRunVerifierStatus changes) {
 //            this.changes = changes;
 //        }
 //
@@ -129,7 +129,7 @@
 //            FileUtils.mkdirs(outputDir);
 //        }
 //
-//        com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus resultSoFar = com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.COMPATIBLE;
+//        InstantRunVerifierStatus resultSoFar = InstantRunVerifierStatus.COMPATIBLE;
 //        for (TransformInput transformInput : inputs) {
 //            resultSoFar = processFolderInputs(resultSoFar, isIncremental, transformInput);
 //            resultSoFar = processJarInputs(resultSoFar, transformInput);
@@ -143,8 +143,8 @@
 //    }
 //
 //    @NonNull
-//    private com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus processFolderInputs(
-//            @NonNull com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus verificationResult,
+//    private InstantRunVerifierStatus processFolderInputs(
+//            @NonNull InstantRunVerifierStatus verificationResult,
 //            boolean isIncremental,
 //            @NonNull TransformInput transformInput) throws IOException {
 //
@@ -183,22 +183,22 @@
 //                    case ADDED:
 //                        // new file, save it for next iteration.
 //                        copyFile(inputFile, lastIterationFile);
-//                        verificationResult = com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.CLASS_ADDED;
+//                        verificationResult = InstantRunVerifierStatus.CLASS_ADDED;
 //                        break;
 //                    case CHANGED:
 //                        // a new version of the class has been compiled, we should compare
 //                        // it with the one saved during the last iteration on the file, but only
 //                        // if we have not failed any verification so far.
-//                        if (verificationResult == com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.COMPATIBLE) {
+//                        if (verificationResult == InstantRunVerifierStatus.COMPATIBLE) {
 //                            if (lastIterationFile.exists()) {
 //                                verificationResult = runVerifier(inputFile.getName(),
-//                                        new com.android.build.gradle.internal2.incremental.InstantRunVerifier.ClassBytesFileProvider(
+//                                        new InstantRunVerifier.ClassBytesFileProvider(
 //                                                lastIterationFile),
-//                                        new com.android.build.gradle.internal2.incremental.InstantRunVerifier.ClassBytesFileProvider(inputFile));
+//                                        new InstantRunVerifier.ClassBytesFileProvider(inputFile));
 //                                LOGGER.verbose("%1$s : verifier result : %2$s",
 //                                        inputFile.getName(), verificationResult);
 //                            } else {
-//                                verificationResult = com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.INSTANT_RUN_FAILURE;
+//                                verificationResult = InstantRunVerifierStatus.INSTANT_RUN_FAILURE;
 //                                LOGGER.verbose("Changed file %1$s not found in verifier backup",
 //                                        inputFile.getAbsolutePath());
 //                            }
@@ -221,8 +221,8 @@
 //    }
 //
 //    @NonNull
-//    private com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus processJarInputs(
-//            @NonNull com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus resultSoFar,
+//    private InstantRunVerifierStatus processJarInputs(
+//            @NonNull InstantRunVerifierStatus resultSoFar,
 //            @NonNull TransformInput transformInput) throws IOException {
 //
 //        // can jarInput have colliding names ?
@@ -238,7 +238,7 @@
 //                    break;
 //                case CHANGED:
 //                    // get a Map of the back up jar entries indexed by name.
-//                    if (resultSoFar == com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.COMPATIBLE) {
+//                    if (resultSoFar == InstantRunVerifierStatus.COMPATIBLE) {
 //                        if (backupJar.exists()) {
 //                            if (backupJar.isDirectory()) {
 //                                LOGGER.warning("Unexpected backup folder at %s while processing %s",
@@ -252,7 +252,7 @@
 //                                if (!backupJar.delete()) {
 //                                    LOGGER.warning("Cannot delete " + backupJar.getAbsolutePath());
 //                                }
-//                                resultSoFar = com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.INSTANT_RUN_FAILURE;
+//                                resultSoFar = InstantRunVerifierStatus.INSTANT_RUN_FAILURE;
 //                            } else {
 //                                try (JarFile backupJarFile = new JarFile(backupJar)) {
 //                                    try (JarFile jarFile = new JarFile(jarInput.getFile())) {
@@ -269,7 +269,7 @@
 //                                "Please file a bug : VerifierTransform expected a file"
 //                                + " at:\n %s \nbut the file does not exist or is a directory",
 //                                jarInput.getFile()));
-//                        resultSoFar = com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.INSTANT_RUN_FAILURE;
+//                        resultSoFar = InstantRunVerifierStatus.INSTANT_RUN_FAILURE;
 //                    }
 //                    copyFile(jarInput.getFile(), backupJar);
 //                    break;
@@ -284,7 +284,7 @@
 //    }
 //
 //    @NonNull
-//    private com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus processChangedJar(JarFile backupJar, JarFile newJar)
+//    private InstantRunVerifierStatus processChangedJar(JarFile backupJar, JarFile newJar)
 //            throws IOException {
 //
 //        Map<String, JarEntry> backupEntries = new HashMap<>();
@@ -300,44 +300,44 @@
 //            if (jarEntry.getName().endsWith(".class")) {
 //                JarEntry backupEntry = backupEntries.get(jarEntry.getName());
 //                if (backupEntry != null) {
-//                    com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus verificationResult =
+//                    InstantRunVerifierStatus verificationResult =
 //                            runVerifier(
 //                                    newJar.getName() + ":" + jarEntry.getName(),
-//                                    new com.android.build.gradle.internal2.incremental.InstantRunVerifier.ClassBytesJarEntryProvider(backupJar, backupEntry),
-//                                    new com.android.build.gradle.internal2.incremental.InstantRunVerifier.ClassBytesJarEntryProvider(newJar, jarEntry));
-//                    if (verificationResult != com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.COMPATIBLE) {
+//                                    new InstantRunVerifier.ClassBytesJarEntryProvider(backupJar, backupEntry),
+//                                    new InstantRunVerifier.ClassBytesJarEntryProvider(newJar, jarEntry));
+//                    if (verificationResult != InstantRunVerifierStatus.COMPATIBLE) {
 //                        return verificationResult;
 //                    }
 //                }
 //
 //            }
 //        }
-//        return com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.COMPATIBLE;
+//        return InstantRunVerifierStatus.COMPATIBLE;
 //    }
 //
 //    @VisibleForTesting
 //    @NonNull
-//    protected com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus runVerifier(String name,
-//                                                                                                  @NonNull final com.android.build.gradle.internal2.incremental.InstantRunVerifier.ClassBytesProvider originalClass ,
-//                                                                                                  @NonNull final com.android.build.gradle.internal2.incremental.InstantRunVerifier.ClassBytesProvider updatedClass) throws IOException {
+//    protected InstantRunVerifierStatus runVerifier(String name,
+//                                                                                                  @NonNull final InstantRunVerifier.ClassBytesProvider originalClass ,
+//                                                                                                  @NonNull final InstantRunVerifier.ClassBytesProvider updatedClass) throws IOException {
 //        if (!name.endsWith(SdkConstants.DOT_CLASS)) {
-//            return com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.COMPATIBLE;
+//            return InstantRunVerifierStatus.COMPATIBLE;
 //        }
-//        com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus status = ThreadRecorder.get().record(
+//        InstantRunVerifierStatus status = ThreadRecorder.get().record(
 //                ExecutionType.TASK_FILE_VERIFICATION,
 //                variantScope.getGlobalScope().getProject().getPath(),
 //                variantScope.getFullVariantName(),
-//                new Recorder.Block<com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus>() {
+//                new Recorder.Block<InstantRunVerifierStatus>() {
 //                    @Override
 //                    @NonNull
-//                    public com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus call() throws Exception {
-//                        return com.android.build.gradle.internal2.incremental.InstantRunVerifier.run(originalClass, updatedClass);
+//                    public InstantRunVerifierStatus call() throws Exception {
+//                        return InstantRunVerifier.run(originalClass, updatedClass);
 //                    }
 //                });
 //        // TODO: re-add approximation of target.
 //        if (status == null) {
 //            LOGGER.warning("No verifier result provided for %1$s", name);
-//            return com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.NOT_RUN;
+//            return InstantRunVerifierStatus.NOT_RUN;
 //        }
 //        return status;
 //    }

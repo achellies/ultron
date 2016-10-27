@@ -48,7 +48,7 @@ public class BuildInfoLoaderTask extends BaseTask {
     Logger logger;
 
     // Variant state that is modified.
-    com.android.build.gradle.internal2.incremental.InstantRunBuildContext instantRunBuildContext;
+    InstantRunBuildContext instantRunBuildContext;
 
     @TaskAction
     public void executeAction() {
@@ -71,7 +71,7 @@ public class BuildInfoLoaderTask extends BaseTask {
         }
         try {
             // move last iteration artifacts to our back up folder.
-            com.android.build.gradle.internal2.incremental.InstantRunBuildContext.Build lastBuild = instantRunBuildContext.getLastBuild();
+            InstantRunBuildContext.Build lastBuild = instantRunBuildContext.getLastBuild();
             if (lastBuild == null) {
                 return;
             }
@@ -79,7 +79,7 @@ public class BuildInfoLoaderTask extends BaseTask {
             // create a new backup folder with the old build-id as the name.
             File backupFolder = new File(pastBuildsFolder, String.valueOf(lastBuild.getBuildId()));
             FileUtils.mkdirs(backupFolder);
-            for (com.android.build.gradle.internal2.incremental.InstantRunBuildContext.Artifact artifact : lastBuild.getArtifacts()) {
+            for (InstantRunBuildContext.Artifact artifact : lastBuild.getArtifacts()) {
                 if (!artifact.isAccumulative()) {
                     File oldLocation = artifact.getLocation();
                     // last iteration could have been a cold swap.
@@ -134,10 +134,10 @@ public class BuildInfoLoaderTask extends BaseTask {
             task.setDescription("InstantRun task to load and backup previous iterations artifacts");
             task.setVariantName(variantScope.getFullVariantName());
             variantScope.getInstantRunBuildContext().setTmpBuildInfo(
-                    com.android.build.gradle.internal2.incremental.InstantRunWrapperTask.ConfigAction.getTmpBuildInfoFile(variantScope));
-            task.buildInfoFile = com.android.build.gradle.internal2.incremental.InstantRunWrapperTask.ConfigAction.getBuildInfoFile(variantScope);
+                    InstantRunWrapperTask.ConfigAction.getTmpBuildInfoFile(variantScope));
+            task.buildInfoFile = InstantRunWrapperTask.ConfigAction.getBuildInfoFile(variantScope);
             task.tmpBuildInfoFile =
-                    com.android.build.gradle.internal2.incremental.InstantRunWrapperTask.ConfigAction.getTmpBuildInfoFile(variantScope);
+                    InstantRunWrapperTask.ConfigAction.getTmpBuildInfoFile(variantScope);
             task.pastBuildsFolder = variantScope.getInstantRunPastIterationsFolder();
 //            task.instantRunBuildContext = variantScope.getInstantRunBuildContext();
             task.logger = logger;

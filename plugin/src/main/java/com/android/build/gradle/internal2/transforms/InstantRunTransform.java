@@ -142,12 +142,12 @@
 //    @Override
 //    public void transform(@NonNull TransformInvocation invocation)
 //            throws IOException, TransformException, InterruptedException {
-//        com.android.build.gradle.internal2.incremental.InstantRunBuildContext instantRunBuildContext = transformScope.getInstantRunBuildContext();
+//        InstantRunBuildContext instantRunBuildContext = transformScope.getInstantRunBuildContext();
 //
 //        // If this is not a HOT_WARM build, clean up the enhanced classes and don't generate new
 //        // ones during this build.
 //        boolean cleanUpClassesThree =
-//                instantRunBuildContext.getBuildMode() != com.android.build.gradle.internal2.incremental.InstantRunBuildMode.HOT_WARM;
+//                instantRunBuildContext.getBuildMode() != InstantRunBuildMode.HOT_WARM;
 //
 //        TransformOutputProvider outputProvider = invocation.getOutputProvider();
 //        if (outputProvider == null) {
@@ -166,7 +166,7 @@
 //        // other transform need to load project's classes.
 //        try (URLClassLoader urlClassLoader = new NonDelegatingUrlClassloader(referencedInputUrls)) {
 //            instantRunBuildContext.startRecording(
-//                    com.android.build.gradle.internal2.incremental.InstantRunBuildContext.TaskType.INSTANT_RUN_TRANSFORM);
+//                    InstantRunBuildContext.TaskType.INSTANT_RUN_TRANSFORM);
 //            Thread.currentThread().setContextClassLoader(urlClassLoader);
 //
 //            File classesTwoOutput = outputProvider.getContentLocation("main",
@@ -201,7 +201,7 @@
 //                                    break;
 //                                case REMOVED:
 //                                    // remove the classes.2 and classes.3 files.
-//                                    deleteOutputFile(com.android.build.gradle.internal2.incremental.IncrementalSupportVisitor.VISITOR_BUILDER,
+//                                    deleteOutputFile(IncrementalSupportVisitor.VISITOR_BUILDER,
 //                                            inputDir, inputFile, classesTwoOutput);
 //                                    deleteOutputFile(IncrementalChangeVisitor.VISITOR_BUILDER,
 //                                            inputDir, inputFile, classesThreeOutput);
@@ -254,7 +254,7 @@
 //        } finally {
 //            Thread.currentThread().setContextClassLoader(currentClassLoader);
 //            instantRunBuildContext.stopRecording(
-//                    com.android.build.gradle.internal2.incremental.InstantRunBuildContext.TaskType.INSTANT_RUN_TRANSFORM);
+//                    InstantRunBuildContext.TaskType.INSTANT_RUN_TRANSFORM);
 //        }
 //    }
 //
@@ -337,7 +337,7 @@
 //            throws IOException {
 //        if (inputFile.getPath().endsWith(SdkConstants.DOT_CLASS)) {
 //            File outputFile = IncrementalVisitor.instrumentClass(
-//                    inputDir, inputFile, outputDir, com.android.build.gradle.internal2.incremental.IncrementalSupportVisitor.VISITOR_BUILDER);
+//                    inputDir, inputFile, outputDir, IncrementalSupportVisitor.VISITOR_BUILDER);
 //        }
 //    }
 //
@@ -379,7 +379,7 @@
 //        // classes and it will not be part of the Patch class that apply changes.
 //        if (outputFile == null) {
 //            transformScope.getInstantRunBuildContext().setVerifierResult(
-//                    com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.INSTANT_RUN_DISABLED);
+//                    InstantRunVerifierStatus.INSTANT_RUN_DISABLED);
 //            return;
 //        }
 //        generatedClasses3Names.add(
@@ -416,12 +416,12 @@
 //                "BUILD_ID", "J", null, buildId);
 //
 //        {
-//            mv = cw.visitMethod(Opcodes.ACC_PUBLIC, com.android.build.gradle.internal2.incremental.ByteCodeUtils.CONSTRUCTOR, "()V", null, null);
+//            mv = cw.visitMethod(Opcodes.ACC_PUBLIC, ByteCodeUtils.CONSTRUCTOR, "()V", null, null);
 //            mv.visitCode();
 //            mv.visitVarInsn(Opcodes.ALOAD, 0);
 //            mv.visitMethodInsn(Opcodes.INVOKESPECIAL,
 //                    IncrementalVisitor.ABSTRACT_PATCHES_LOADER_IMPL,
-//                    com.android.build.gradle.internal2.incremental.ByteCodeUtils.CONSTRUCTOR, "()V", false);
+//                    ByteCodeUtils.CONSTRUCTOR, "()V", false);
 //            mv.visitInsn(Opcodes.RETURN);
 //            mv.visitMaxs(1, 1);
 //            mv.visitEnd();

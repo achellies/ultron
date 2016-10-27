@@ -85,7 +85,7 @@ public class InstantRunWrapperTask extends BaseTask {
 
         // Record instant run status in analytics for this build
         ProcessRecorder.getGlobalProperties().setInstantRunStatus(
-                com.android.build.gradle.internal2.incremental.InstantRunAnalyticsHelper.generateAnalyticsProto(instantRunBuildContext));
+                InstantRunAnalyticsHelper.generateAnalyticsProto(instantRunBuildContext));
     }
 
     public static class ConfigAction implements TaskConfigAction<InstantRunWrapperTask> {

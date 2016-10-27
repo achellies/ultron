@@ -63,22 +63,22 @@ import java.util.List;
  *
  * @see ConstructorBuilder for the generation of init$args and init$body.
  */
-public class ConstructorRedirection extends com.android.build.gradle.internal2.incremental.Redirection {
+public class ConstructorRedirection extends Redirection {
 
     // The signature of the dynamically dispatching 'this' constructor. The final parameters is
     // to disambiguate from other constructors that might preexist on the class.
     static final String DISPATCHING_THIS_SIGNATURE =
             "([Ljava/lang/Object;"
-                    + com.android.build.gradle.internal2.incremental.IncrementalVisitor.INSTANT_RELOAD_EXCEPTION.getDescriptor() + ")V";
+                    + IncrementalVisitor.INSTANT_RELOAD_EXCEPTION.getDescriptor() + ")V";
 
-    private final com.android.build.gradle.internal2.incremental.Constructor constructor;
+    private final Constructor constructor;
 
     /**
      * @param constructor the constructor to redirect.
      * @param types       the types of the arguments on the super()/this() call.
      */
     ConstructorRedirection(LabelNode label,
-                           com.android.build.gradle.internal2.incremental.Constructor constructor,
+                           Constructor constructor,
                            @NonNull List<Type> types) {
         super(label, types, Type.VOID_TYPE);
         this.constructor = constructor;
@@ -105,17 +105,17 @@ public class ConstructorRedirection extends com.android.build.gradle.internal2.i
         mv.arrayStore(Type.getType(Object.class));
 
         // Set the arguments in positions 1..(n-1);
-        com.android.build.gradle.internal2.incremental.ByteCodeUtils.loadVariableArray(mv, com.android.build.gradle.internal2.incremental.ByteCodeUtils.toLocalVariables(types), 1); // Skip the this value
+        ByteCodeUtils.loadVariableArray(mv, ByteCodeUtils.toLocalVariables(types), 1); // Skip the this value
 
         // Add the locals array at the last position.
         mv.dup();
         // The index of the last position of the array.
         mv.push(types.size());
         // Create the array with all the local variables declared up to this point.
-        com.android.build.gradle.internal2.incremental.ByteCodeUtils.newVariableArray(mv, constructor.variables.subList(0, constructor.localsAtLoadThis));
+        ByteCodeUtils.newVariableArray(mv, constructor.variables.subList(0, constructor.localsAtLoadThis));
         mv.arrayStore(Type.getType(Object.class));
 
-        mv.invokeInterface(com.android.build.gradle.internal2.incremental.IncrementalVisitor.CHANGE_TYPE, Method.getMethod("Object access$dispatch(String, Object[])"));
+        mv.invokeInterface(IncrementalVisitor.CHANGE_TYPE, Method.getMethod("Object access$dispatch(String, Object[])"));
         mv.visitTypeInsn(Opcodes.CHECKCAST, "[Ljava/lang/Object;");
         //// At this point, init$args has been called and the result Object is on the stack.
         //// The value of that Object is Object[] with exactly n + 2 elements.
@@ -137,7 +137,7 @@ public class ConstructorRedirection extends com.android.build.gradle.internal2.i
         // Push a null for the marker parameter.
         mv.visitInsn(Opcodes.ACONST_NULL);
         // Invoke the constructor
-        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, constructor.owner, com.android.build.gradle.internal2.incremental.ByteCodeUtils.CONSTRUCTOR, DISPATCHING_THIS_SIGNATURE, false);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, constructor.owner, ByteCodeUtils.CONSTRUCTOR, DISPATCHING_THIS_SIGNATURE, false);
 
 //        {
 //            // FIXME: 在构造里通过Opcodes.INVOKESPECIAL来调用相同签名的构造函数来替换this构造函数的调用是行不通的,只能调用不同签名的其他构造函数
@@ -168,7 +168,7 @@ public class ConstructorRedirection extends com.android.build.gradle.internal2.i
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.arrayStore(Type.getType(Object.class));
 
-        mv.invokeInterface(com.android.build.gradle.internal2.incremental.IncrementalVisitor.CHANGE_TYPE, Method.getMethod("Object access$dispatch(String, Object[])"));
+        mv.invokeInterface(IncrementalVisitor.CHANGE_TYPE, Method.getMethod("Object access$dispatch(String, Object[])"));
         mv.pop();
     }
 }

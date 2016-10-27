@@ -159,14 +159,14 @@ public class InstantRunVerifier {
     }
 
 
-    public static com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus run(File original, File updated) throws IOException {
+    public static InstantRunVerifierStatus run(File original, File updated) throws IOException {
         return run(new ClassBytesFileProvider(original), new ClassBytesFileProvider(updated));
     }
 
     // ASM API not generified.
     @SuppressWarnings("unchecked")
     @NonNull
-    public static com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus run(ClassBytesProvider original, ClassBytesProvider updated)
+    public static InstantRunVerifierStatus run(ClassBytesProvider original, ClassBytesProvider updated)
             throws IOException {
 
         ClassNode originalClass = loadClass(original);
@@ -192,7 +192,7 @@ public class InstantRunVerifier {
             for (AnnotationNode annotationNode : invisibleAnnotations) {
 
                 if (annotationNode.desc.equals(
-                        com.android.build.gradle.internal2.incremental.IncrementalVisitor.DISABLE_ANNOTATION_TYPE.getDescriptor())) {
+                        IncrementalVisitor.DISABLE_ANNOTATION_TYPE.getDescriptor())) {
                     // potentially, we could try to see if anything has really changed between
                     // the two classes but the fact that we got an updated class means so far that
                     // we have a new version and should restart.
@@ -201,7 +201,7 @@ public class InstantRunVerifier {
             }
         }
 
-        com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus fieldChange = verifyFields(originalClass, updatedClass);
+        InstantRunVerifierStatus fieldChange = verifyFields(originalClass, updatedClass);
         if (fieldChange != COMPATIBLE) {
             return fieldChange;
         }
@@ -210,7 +210,7 @@ public class InstantRunVerifier {
     }
 
     @NonNull
-    private static com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus verifyFields(
+    private static InstantRunVerifierStatus verifyFields(
             @NonNull ClassNode originalClass,
             @NonNull ClassNode updatedClass) {
 
@@ -264,7 +264,7 @@ public class InstantRunVerifier {
     }
 
     @NonNull
-    private static com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus verifyMethods(
+    private static InstantRunVerifierStatus verifyMethods(
             @NonNull ClassNode originalClass, @NonNull ClassNode updatedClass) {
 
         @SuppressWarnings("unchecked") // ASM API.
@@ -287,7 +287,7 @@ public class InstantRunVerifier {
             // remove the method from the visited ones on the updated class.
             nonVisitedMethodsOnUpdatedClass.remove(updatedMethod);
 
-            com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus change = methodNode.name.equals(ByteCodeUtils.CLASS_INITIALIZER)
+            InstantRunVerifierStatus change = methodNode.name.equals(ByteCodeUtils.CLASS_INITIALIZER)
                     ? visitClassInitializer(methodNode, updatedMethod)
                     : verifyMethod(methodNode, updatedMethod);
 
@@ -303,7 +303,7 @@ public class InstantRunVerifier {
     }
 
     @NonNull
-    private static com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus visitClassInitializer(MethodNode originalClassInitializer,
+    private static InstantRunVerifierStatus visitClassInitializer(MethodNode originalClassInitializer,
                                                                                                                  MethodNode updateClassInitializer) {
 
         return METHOD_COMPARATOR.areEqual(originalClassInitializer, updateClassInitializer)
@@ -313,7 +313,7 @@ public class InstantRunVerifier {
 
     @SuppressWarnings("unchecked") // ASM API
     @NonNull
-    private static com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus verifyMethod(
+    private static InstantRunVerifierStatus verifyMethod(
             MethodNode methodNode,
             MethodNode updatedMethod) {
 
@@ -331,14 +331,14 @@ public class InstantRunVerifier {
         if (invisibleAnnotations != null) {
             for (AnnotationNode originalMethodAnnotation : invisibleAnnotations) {
                 if (originalMethodAnnotation.desc.equals(
-                        com.android.build.gradle.internal2.incremental.IncrementalVisitor.DISABLE_ANNOTATION_TYPE.getDescriptor())) {
+                        IncrementalVisitor.DISABLE_ANNOTATION_TYPE.getDescriptor())) {
                     disabledMethod = true;
                 }
             }
         }
 
         boolean usingBlackListedAPIs =
-                com.android.build.gradle.internal2.incremental.InstantRunMethodVerifier.verifyMethod(updatedMethod) != COMPATIBLE;
+                InstantRunMethodVerifier.verifyMethod(updatedMethod) != COMPATIBLE;
 
         // either disabled or using blacklisted APIs, let it through only if the method
         // implementation is unchanged.
