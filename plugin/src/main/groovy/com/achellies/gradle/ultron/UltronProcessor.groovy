@@ -203,6 +203,7 @@ public class UltronProcessor {
 
                 if (shouldModifyBytecode) {
                     def jarFile = new JarFile(jarInput.sourceJar)
+                    File inputDir = new File("${jarInput.sourceJar.parentFile.absolutePath}/${System.currentTimeMillis()}_tmp/");
 
                     Enumeration enumeration = jarFile.entries();
 
@@ -227,10 +228,10 @@ public class UltronProcessor {
                                 jarOutputStream.write(GenerateInstantRunAppInfo.generateAppInfoClass(extension.applicationId, extension.applicationClass, extension.buildId));
                             } else {
                                 if (isPackageInstantRunEnabled(className)) {
-                                    def temp = File.createTempFile(it.name, SdkConstants.DOT_CLASS)
+                                    def temp = new File(it.name, inputDir);
+                                    temp.mkdirs();
 
                                     File inputFile = temp;
-                                    File inputDir = jarInput.sourceJar.parentFile;
                                     File outputDir = temp.parentFile;
                                     Files.copy(inputStream, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
@@ -262,7 +263,6 @@ public class UltronProcessor {
                                         }
                                     }
 
-                                    temp.delete();
                                 } else {
                                     jarOutputStream.write(IOUtils.toByteArray(inputStream));
                                 }
@@ -274,6 +274,8 @@ public class UltronProcessor {
                     }
                     jarOutputStream.close();
                     jarFile.close();
+
+                    FileUtils.deleteDirectory(inputDir);
                 } else {
                     FileUtils.copyFile(jarInput.sourceJar, dest);
                 }
