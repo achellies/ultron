@@ -51,37 +51,43 @@ class UltronPlugin implements Plugin<Project> {
 
         UltronPlugin plugin = this;
         if (registerTransform) {
-            GradleUtils.getAndroidExtension(project).applicationVariants.all { BaseVariant variant ->
-                def variantName = variant.name.capitalize()
-                // Configure ProGuard if needed
-                if (variant.buildType.minifyEnabled) {
-                    def proguardTaskName = "transformClassesAndResourcesWithProguardFor${variantName}"
-                    def proguard = (TransformTask) project.tasks[proguardTaskName]
-                    def pt = (ProGuardTransform) proguard.getTransform()
-                    configureProguard(variant, proguard, pt)
-                }
-
-                if (!variant.getOutputs().isEmpty()) {
-                    def variantOutput = variant.getOutputs().get(0);
-                    variantOutput.processManifest.doLast {
-                        processManifest(variantOutput.processManifest.manifestOutputFile);
-                    }
-                }
-
-                def dexTask = project.tasks.findByName("transformClassesWithDexFor${variant.name.capitalize()}");
-
-                UltronTask ultronTask = project.tasks.create("process${variant.name.capitalize()}UltronSupport", UltronTask);
-                ultronTask.plugin = plugin;
-                ultronTask.variant = variant;
-                ultronTask.dexTask = dexTask;
-
-                def dependencies = dexTask.taskDependencies.getDependencies(dexTask)
-                ultronTask.dependsOn dependencies
-                dexTask.dependsOn ultronTask
+            project.afterEvaluate {
+                configUltronTask(plugin);
             }
 
 //            // FIXME: 为了支持ProGuard,这里需要在ProGuard完成后再进行处理,所以放弃Transform
 //            GradleUtils.getAndroidExtension(project).registerTransform(new UltronTransform(this, project))
+        }
+    }
+
+    void configUltronTask(UltronPlugin plugin) {
+        for (BaseVariant variant : GradleUtils.getAndroidVariants(project)) {
+            def variantName = variant.name.capitalize()
+            // Configure ProGuard if needed
+            if (variant.buildType.minifyEnabled) {
+                def proguardTaskName = "transformClassesAndResourcesWithProguardFor${variantName}"
+                def proguard = (TransformTask) project.tasks[proguardTaskName]
+                def pt = (ProGuardTransform) proguard.getTransform()
+                configureProguard(variant, proguard, pt)
+            }
+
+            if (!variant.getOutputs().isEmpty()) {
+                def variantOutput = variant.getOutputs().get(0);
+                variantOutput.processManifest.doLast {
+                    processManifest(variantOutput.processManifest.manifestOutputFile);
+                }
+            }
+
+            def dexTask = project.tasks.findByName("transformClassesWithDexFor${variant.name.capitalize()}");
+
+            UltronTask ultronTask = project.tasks.create("process${variant.name.capitalize()}UltronSupport", UltronTask);
+            ultronTask.plugin = plugin;
+            ultronTask.variant = variant;
+            ultronTask.dexTask = dexTask;
+
+            def dependencies = dexTask.taskDependencies.getDependencies(dexTask)
+            ultronTask.dependsOn dependencies
+            dexTask.dependsOn ultronTask
         }
     }
 
