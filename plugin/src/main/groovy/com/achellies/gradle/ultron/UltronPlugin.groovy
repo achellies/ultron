@@ -50,8 +50,6 @@ class UltronPlugin implements Plugin<Project> {
         applyExtension(project);
 
         if (registerTransform) {
-            GradleUtils.getAndroidVariants(project)
-
             GradleUtils.getAndroidExtension(project).applicationVariants.all { BaseVariant variant ->
                 // Configure ProGuard if needed
                 if (variant.buildType.minifyEnabled) {
@@ -68,8 +66,11 @@ class UltronPlugin implements Plugin<Project> {
                         processManifest(variantOutput.processManifest.manifestOutputFile);
                     }
                 }
+
+                def dexTask = project.tasks.findByName("transformClassesWithDexFor${variant.name.capitalize()}")
             }
 
+            // FIXME: 为了支持ProGuard,这里需要在ProGuard完成后再进行处理,所以放弃Transform
             GradleUtils.getAndroidExtension(project).registerTransform(new UltronTransform(this, project))
         }
     }
