@@ -25,6 +25,7 @@ import com.android.build.gradle.internal.scope.ConventionMappingHelper;
 import com.android.build.gradle.internal.scope.PackagingScope;
 import com.android.build.gradle.internal.scope.TaskConfigAction;
 import com.android.build.gradle.internal.tasks.BaseTask;
+import com.android.build.gradle.internal2.incremental.InstantRunBuildContext;
 import com.android.builder.core.AndroidBuilder;
 import com.android.builder.core.VariantType;
 import com.android.builder.internal.aapt.Aapt;
@@ -182,7 +183,7 @@ public class InstantRunSplitApkBuilder extends BaseTask {
         getBuilder().executeProcess(processInfoBuilder.createProcess(),
                 new LoggedProcessOutputHandler(getILogger()));
 
-        instantRunBuildContext.addChangedFile(com.android.build.gradle.internal2.incremental.InstantRunBuildContext.FileType.SPLIT, alignedOutput);
+        instantRunBuildContext.addChangedFile(InstantRunBuildContext.FileType.SPLIT, alignedOutput);
         resPackageFile.delete();
     }
 

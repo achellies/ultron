@@ -46,6 +46,6 @@ public class MethodRedirection extends Redirection {
         ByteCodeUtils.newVariableArray(mv, ByteCodeUtils.toLocalVariables(types));
 
         // now invoke the generic dispatch method.
-        mv.invokeInterface(com.android.build.gradle.internal2.incremental.IncrementalVisitor.CHANGE_TYPE, Method.getMethod("Object access$dispatch(String, Object[])"));
+        mv.invokeInterface(IncrementalVisitor.CHANGE_TYPE, Method.getMethod("Object access$dispatch(String, Object[])"));
     }
 }

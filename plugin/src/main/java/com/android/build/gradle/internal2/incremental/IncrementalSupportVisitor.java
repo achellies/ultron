@@ -59,21 +59,21 @@ import org.objectweb.asm.tree.MethodNode;
  * Redirection will be achieved by calling a
  * {@code IncrementalChange#access$dispatch(String, Object...)} method.
  */
-public class IncrementalSupportVisitor extends com.android.build.gradle.internal2.incremental.IncrementalVisitor {
+public class IncrementalSupportVisitor extends IncrementalVisitor {
 
     @NonNull
     private static final ILogger LOG = LoggerWrapper.getLogger(IncrementalSupportVisitor.class);
 
     private boolean disableRedirectionForClass = false;
 
-    private static final class VisitorBuilder implements com.android.build.gradle.internal2.incremental.IncrementalVisitor.VisitorBuilder {
+    private static final class VisitorBuilder implements IncrementalVisitor.VisitorBuilder {
 
         private VisitorBuilder() {
         }
 
         @NonNull
         @Override
-        public com.android.build.gradle.internal2.incremental.IncrementalVisitor build(
+        public IncrementalVisitor build(
                 @NonNull ClassNode classNode,
                 @NonNull List<ClassNode> parentNodes,
                 @NonNull ClassVisitor classVisitor) {
@@ -94,7 +94,7 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
     }
 
     @NonNull
-    public static final com.android.build.gradle.internal2.incremental.IncrementalVisitor.VisitorBuilder VISITOR_BUILDER = new VisitorBuilder();
+    public static final IncrementalVisitor.VisitorBuilder VISITOR_BUILDER = new VisitorBuilder();
 
     public IncrementalSupportVisitor(
             @NonNull ClassNode classNode,
@@ -157,9 +157,9 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
     }
 
     /**
-     * Insert Constructor specific logic({@link com.android.build.gradle.internal2.incremental.ConstructorRedirection} and
-     * {@link com.android.build.gradle.internal2.incremental.ConstructorBuilder}) for constructor redirecting or
-     * normal method redirecting ({@link com.android.build.gradle.internal2.incremental.MethodRedirection}) for other methods.
+     * Insert Constructor specific logic({@link ConstructorRedirection} and
+     * {@link ConstructorBuilder}) for constructor redirecting or
+     * normal method redirecting ({@link MethodRedirection}) for other methods.
      */
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature,
@@ -171,11 +171,11 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
         MethodNode method = getMethodByNameInClass(name, desc, classNode);
         // does the method use blacklisted APIs.
         boolean hasIncompatibleChange = InstantRunMethodVerifier.verifyMethod(method)
-                != com.android.build.gradle.internal2.incremental.InstantRunVerifierStatus.COMPATIBLE;
+                != InstantRunVerifierStatus.COMPATIBLE;
 
         if (hasIncompatibleChange || disableRedirectionForClass
                 || !isAccessCompatibleWithInstantRun(access)
-                || name.equals(com.android.build.gradle.internal2.incremental.ByteCodeUtils.CLASS_INITIALIZER)) {
+                || name.equals(ByteCodeUtils.CLASS_INITIALIZER)) {
             return defaultVisitor;
         } else {
             ArrayList<Type> args = new ArrayList<Type>(Arrays.asList(Type.getArgumentTypes(desc)));
@@ -186,8 +186,8 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
 
 
             ISMethodVisitor mv = new ISMethodVisitor(defaultVisitor, access, name, desc);
-            if (name.equals(com.android.build.gradle.internal2.incremental.ByteCodeUtils.CONSTRUCTOR)) {
-                com.android.build.gradle.internal2.incremental.Constructor constructor = com.android.build.gradle.internal2.incremental.ConstructorBuilder.build(visitedClassName, method);
+            if (name.equals(ByteCodeUtils.CONSTRUCTOR)) {
+                Constructor constructor = ConstructorBuilder.build(visitedClassName, method);
                 LabelNode start = new LabelNode();
                 method.instructions.insert(constructor.loadThis, start);
                 if (constructor.lineForLoad != -1) {
@@ -197,9 +197,9 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
                     method.instructions.insert(constructor.loadThis,
                         new LineNumberNode(constructor.lineForLoad, start));
                 }
-                mv.addRedirection(new com.android.build.gradle.internal2.incremental.ConstructorRedirection(start, constructor, args));
+                mv.addRedirection(new ConstructorRedirection(start, constructor, args));
             } else {
-                mv.addRedirection(new com.android.build.gradle.internal2.incremental.MethodRedirection(
+                mv.addRedirection(new MethodRedirection(
                         new LabelNode(mv.getStartLabel()),
                         name + "." + desc,
                         args,
@@ -261,8 +261,8 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
         private boolean disableRedirection = false;
         private int change;
         private final List<Type> args;
-        private final List<com.android.build.gradle.internal2.incremental.Redirection> redirections;
-        private final Map<Label, com.android.build.gradle.internal2.incremental.Redirection> resolvedRedirections;
+        private final List<Redirection> redirections;
+        private final Map<Label, Redirection> resolvedRedirections;
         private final Label start;
 
         public ISMethodVisitor(MethodVisitor mv, int access,  String name, String desc) {
@@ -302,7 +302,7 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
             if (!disableRedirection) {
                 // Labels cannot be used directly as they are volatile between different visits,
                 // so we must use LabelNode and resolve before visiting for better performance.
-                for (com.android.build.gradle.internal2.incremental.Redirection redirection : redirections) {
+                for (Redirection redirection : redirections) {
                     resolvedRedirections.put(redirection.getPosition().getLabel(), redirection);
                 }
 
@@ -325,7 +325,7 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
 
         private void redirectAt(Label label) {
             if (disableRedirection) return;
-            com.android.build.gradle.internal2.incremental.Redirection redirection = resolvedRedirections.get(label);
+            Redirection redirection = resolvedRedirections.get(label);
             if (redirection != null) {
                 // A special line number to mark this area of code.
                 super.visitLineNumber(0, label);
@@ -333,7 +333,7 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
             }
         }
 
-        public void addRedirection(@NonNull com.android.build.gradle.internal2.incremental.Redirection redirection) {
+        public void addRedirection(@NonNull Redirection redirection) {
             redirections.add(redirection);
         }
 
@@ -436,7 +436,7 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
                     mv.visitVarInsn(Opcodes.ALOAD, 2);
                     mv.push(argc);
                     mv.visitInsn(Opcodes.AALOAD);
-                    com.android.build.gradle.internal2.incremental.ByteCodeUtils.unbox(mv, t);
+                    ByteCodeUtils.unbox(mv, t);
                     argc++;
                 }
 
@@ -514,8 +514,8 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
 
         int access = Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC;
 
-        Method m = new Method(com.android.build.gradle.internal2.incremental.ByteCodeUtils.CONSTRUCTOR,
-                com.android.build.gradle.internal2.incremental.ConstructorRedirection.DISPATCHING_THIS_SIGNATURE);
+        Method m = new Method(ByteCodeUtils.CONSTRUCTOR,
+                ConstructorRedirection.DISPATCHING_THIS_SIGNATURE);
         MethodVisitor visitor = super.visitMethod(0, m.getName(), m.getDescriptor(), null, null);
         final GeneratorAdapter mv = new GeneratorAdapter(access, m, visitor);
 
@@ -552,11 +552,11 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
                     mv.visitVarInsn(Opcodes.ALOAD, 1);
                     mv.push(argc + 1);
                     mv.visitInsn(Opcodes.AALOAD);
-                    com.android.build.gradle.internal2.incremental.ByteCodeUtils.unbox(mv, t);
+                    ByteCodeUtils.unbox(mv, t);
                     argc++;
                 }
 
-                mv.visitMethodInsn(Opcodes.INVOKESPECIAL, owner, com.android.build.gradle.internal2.incremental.ByteCodeUtils.CONSTRUCTOR,
+                mv.visitMethodInsn(Opcodes.INVOKESPECIAL, owner, ByteCodeUtils.CONSTRUCTOR,
                         methodNode.desc, false);
 
                 mv.visitInsn(Opcodes.RETURN);
@@ -679,8 +679,8 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
             @NonNull ClassNode child) {
 
         return ((parent.access & (Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED)) != 0 ||
-                Objects.equal(com.android.build.gradle.internal2.incremental.ByteCodeUtils.getPackageName(parent.name),
-                        com.android.build.gradle.internal2.incremental.ByteCodeUtils.getPackageName(child.name)));
+                Objects.equal(ByteCodeUtils.getPackageName(parent.name),
+                        ByteCodeUtils.getPackageName(child.name)));
     }
 
     /**
@@ -697,7 +697,7 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
             Map<String, MethodReference> methods) {
         //noinspection unchecked
         for (MethodNode method : (List<MethodNode>) superClass.methods) {
-            if (method.name.equals(com.android.build.gradle.internal2.incremental.ByteCodeUtils.CONSTRUCTOR) || method.name.equals(com.android.build.gradle.internal2.incremental.ByteCodeUtils.CLASS_INITIALIZER)) {
+            if (method.name.equals(ByteCodeUtils.CONSTRUCTOR) || method.name.equals(ByteCodeUtils.CLASS_INITIALIZER)) {
                 continue;
             }
             String name = method.name + "." + method.desc;
@@ -722,8 +722,8 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
         } else {
             // "package private" access modifier.
             return Objects.equal(
-                    com.android.build.gradle.internal2.incremental.ByteCodeUtils.getPackageName(superClass.name),
-                    com.android.build.gradle.internal2.incremental.ByteCodeUtils.getPackageName(subclass.name));
+                    ByteCodeUtils.getPackageName(superClass.name),
+                    ByteCodeUtils.getPackageName(subclass.name));
         }
     }
 
@@ -737,7 +737,7 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
             boolean keepPrivateConstructors) {
         //noinspection unchecked
         for (MethodNode method : (List<MethodNode>) classNode.methods) {
-            if (!method.name.equals(com.android.build.gradle.internal2.incremental.ByteCodeUtils.CONSTRUCTOR)) {
+            if (!method.name.equals(ByteCodeUtils.CONSTRUCTOR)) {
                 continue;
             }
 
@@ -815,6 +815,6 @@ public class IncrementalSupportVisitor extends com.android.build.gradle.internal
      * @throws IOException if some files cannot be read or written.
      */
     public static void main(String[] args) throws IOException {
-        com.android.build.gradle.internal2.incremental.IncrementalVisitor.main(args, VISITOR_BUILDER);
+        IncrementalVisitor.main(args, VISITOR_BUILDER);
     }
 }
