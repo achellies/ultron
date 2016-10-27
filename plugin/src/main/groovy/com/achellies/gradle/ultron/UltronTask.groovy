@@ -67,6 +67,14 @@ public class UltronTask extends DefaultAndroidTask {
 
                         jarInputArgses.add(new UltronProcessor.JarInputArgs(source, dest));
                     }
+                    if (jars.isEmpty()) {
+                        File tempDir = new File("${inputFile.parentFile.absolutePath}/${System.currentTimeMillis()}/");
+
+                        FileUtils.copyDirectory(inputFile, tempDir);
+
+                        UltronProcessor.DirectoryInputArgs directoryInputArgs = new UltronProcessor.DirectoryInputArgs(tempDir, inputFile);
+                        directoryInputArgses.add(directoryInputArgs);
+                    }
                 } else if (inputFile.name.endsWith(SdkConstants.DOT_JAR)) {
                     File source = inputFile;
                     File dest = new File("${inputFile.name}.tmp", inputFile.parentFile);
@@ -87,6 +95,12 @@ public class UltronTask extends DefaultAndroidTask {
                 jarInput.sourceJar.delete();
 
                 jarInput.destJar.renameTo(jarInput.sourceJar);
+            }
+        }
+
+        for (UltronProcessor.DirectoryInputArgs directoryInputArgs : directoryInputArgses) {
+            if (directoryInputArgs.sourceDir.exists()) {
+                FileUtils.deleteDirectory(directoryInputArgs.sourceDir);
             }
         }
     }
