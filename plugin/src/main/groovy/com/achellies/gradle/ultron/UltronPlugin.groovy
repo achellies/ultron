@@ -58,6 +58,7 @@ class UltronPlugin implements Plugin<Project> {
 //            // FIXME: 为了支持ProGuard,这里需要在ProGuard完成后再进行处理,所以放弃Transform
 //            GradleUtils.getAndroidExtension(project).registerTransform(new UltronTransform(this, project))
         }
+
     }
 
     void configUltronTask(UltronPlugin plugin) {
@@ -69,6 +70,19 @@ class UltronPlugin implements Plugin<Project> {
                 def proguard = (TransformTask) project.tasks[proguardTaskName]
                 def pt = (ProGuardTransform) proguard.getTransform()
                 configureProguard(variant, proguard, pt)
+
+                proguard.doFirst {
+                    applyProGuardMapping(project, pt);
+
+//                    println "applyMapping = " +  pt.configuration.applyMapping;
+//                    println "testedMappingFile = " + pt.testedMappingFile;
+                }
+
+//                proguard.doLast {
+//                    println "********************************"
+//                    println "applyMapping = " +  pt.configuration.applyMapping;
+//                    println "testedMappingFile = " + pt.testedMappingFile;
+//                }
             }
 
             if (!variant.getOutputs().isEmpty()) {
@@ -95,7 +109,10 @@ class UltronPlugin implements Plugin<Project> {
 //        pt.keep("interface com.android.tools.fd.runtime.IncrementalChange { *; }");
 //        pt.keep("class * implements com.android.tools.fd.runtime.IncrementalChange { *; }");
 //        pt.keep("class com.android.tools.fd.** {*;}");
+        applyProGuardMapping(project, pt);
+    }
 
+    void applyProGuardMapping(Project project, ProGuardTransform pt) {
         UltronExtension extension = getConfig(project);
         if (extension.applyProGuardMappingFilePath != null && !extension.applyProGuardMappingFilePath.isEmpty()) {
             def mappingFile = new File(extension.applyProGuardMappingFilePath);

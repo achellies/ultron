@@ -1,4 +1,4 @@
--useuniqueclassmembernames
+#-useuniqueclassmembernames
 -keep interface com.android.tools.fd.runtime.IncrementalChange { *; }
 -keep class * implements com.android.tools.fd.runtime.IncrementalChange { *; }
 -keep class com.android.tools.fd.** {*;}

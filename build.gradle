@@ -4,7 +4,12 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0'
+        classpath ('com.android.tools.build:gradle:2.2.0') {
+            exclude module: 'proguard-base'
+        }
+        classpath ('net.sf.proguard:proguard-base:5.3.9') {
+            force = true
+        }
     }
 }
 
