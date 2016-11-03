@@ -81,4 +81,5 @@ dependencies {
 ultron {
     supportPackageFilters = ["com.achellies."]
 //    applyClassHashFilePath = "hash.txt"
+    applyProGuardMappingFilePath = "mapping.txt"
 }
