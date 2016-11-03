@@ -1,1 +1,1 @@
-include ':library', ':plugin', ':sample'
+include ':library', ':plugin', ':sample', ':proguard-base'

@@ -1,17 +1,9 @@
 package com.achellies.gradle.ultron
 
-import com.android.SdkConstants
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.transforms.ProGuardTransform
 import com.android.utils.XmlUtils
-import javassist.CannotCompileException
-import javassist.ClassPool
-import javassist.CtClass
-import javassist.CtMethod
-import javassist.expr.ExprEditor
-import javassist.expr.MethodCall
-import org.apache.commons.io.IOUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.tooling.BuildException
@@ -20,10 +12,6 @@ import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
 import org.xml.sax.SAXException
-import proguard.ProGuard
-import proguard.obfuscate.MemberNameCollector
-import proguard.obfuscate.MemberNameConflictFixer
-import proguard.obfuscate.MemberObfuscator
 
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
@@ -31,10 +19,6 @@ import javax.xml.transform.Transformer
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
-import java.util.jar.JarEntry
-import java.util.jar.JarFile
-import java.util.jar.JarOutputStream
-import java.util.zip.ZipEntry
 
 import static com.android.SdkConstants.ATTR_PACKAGE
 import static com.android.SdkConstants.TAG_APPLICATION
@@ -63,11 +47,6 @@ class UltronPlugin implements Plugin<Project> {
             }
         }
 
-        new ProGuard(null);
-        new MemberObfuscator(false, null, null);
-        new MemberNameCollector(false, null);
-        new MemberNameConflictFixer(false, null, null, null);
-
         applyExtension(project);
 
         UltronPlugin plugin = this;
@@ -82,70 +61,6 @@ class UltronPlugin implements Plugin<Project> {
 
     }
 
-    String trickDxJarForRuntimeVisibleAnnotations(String jarPath) {
-
-        def dxJarFile = new File(jarPath)
-        def jar = new JarFile(dxJarFile)
-
-        def trickedJar = new File(dxJarFile.parentFile, "${dxJarFile.name}_bat.jar")
-        if (!trickedJar.exists()) {
-
-            JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(trickedJar));
-
-            Enumeration enumeration = jar.entries();
-            while (enumeration.hasMoreElements()) {
-                JarEntry jarEntry = (JarEntry) enumeration.nextElement();
-
-                String entryName = jarEntry.name;
-
-                ZipEntry zipEntry = new ZipEntry(entryName);
-
-                InputStream inputStream = jar.getInputStream(jarEntry);
-
-                if (entryName.endsWith(SdkConstants.DOT_CLASS) && (entryName.startsWith("proguard"))) {
-//                    try {
-//                        def classPool = new ClassPool(null)
-//                        classPool.appendSystemPath()
-//                        classPool.appendClassPath(dxJarFile.absolutePath)
-//
-//                        CtClass ctClass = classPool.getOrNull("proguard.classfile.ClassPool")
-//                            if (ctClass != null) {
-//                                CtMethod ctMethod = ctClass.getDeclaredMethod("parseClass")
-//                                ctMethod.instrument(new ExprEditor() {
-//                                    @Override
-//                                    void edit(MethodCall m) throws CannotCompileException {
-//                                        super.edit(m)
-//                                        if (m.methodName.contentEquals("getMagic") && m.className.contentEquals("com.android.dx.cf.direct.DirectClassFile")) {
-//                                            m.replace("if (\$0.getMajorVersion0() >= 52) {\n" +
-//                                                    "com.android.dx.command.DxConsole.err.println(name);};\n" +
-//                                                    "\$_ = \$proceed(\$\$);")
-//                                        }
-//                                    }
-//                                })
-//                            }
-//
-//                        jarOutputStream.putNextEntry(zipEntry);
-//                        jarOutputStream.write(ctClass.toBytecode())
-//                        ctClass.detach()
-//                    } catch (Exception e) {
-                        jarOutputStream.putNextEntry(zipEntry);
-                        jarOutputStream.write(IOUtils.toByteArray(inputStream));
-//                    }
-                }
-//                else {
-//                    jarOutputStream.putNextEntry(zipEntry);
-//                    jarOutputStream.write(IOUtils.toByteArray(inputStream));
-//                }
-                inputStream.close()
-                jarOutputStream.closeEntry();
-            }
-
-            jarOutputStream.close();
-        }
-
-        return trickedJar.absolutePath
-    }
-
     void configUltronTask(UltronPlugin plugin) {
         for (BaseVariant variant : GradleUtils.getAndroidVariants(project)) {
             def variantName = variant.name.capitalize()
@@ -157,7 +72,7 @@ class UltronPlugin implements Plugin<Project> {
                 configureProguard(variant, proguard, pt)
 
                 proguard.doFirst {
-                    applyProGuardMapping(project);
+                    applyProGuardMapping(project, pt);
 
 //                    println "applyMapping = " +  pt.configuration.applyMapping;
 //                    println "testedMappingFile = " + pt.testedMappingFile;
@@ -194,10 +109,10 @@ class UltronPlugin implements Plugin<Project> {
 //        pt.keep("interface com.android.tools.fd.runtime.IncrementalChange { *; }");
 //        pt.keep("class * implements com.android.tools.fd.runtime.IncrementalChange { *; }");
 //        pt.keep("class com.android.tools.fd.** {*;}");
-        applyProGuardMapping(project);
+        applyProGuardMapping(project, pt);
     }
 
-    void applyProGuardMapping(Project project) {
+    void applyProGuardMapping(Project project, ProGuardTransform pt) {
         UltronExtension extension = getConfig(project);
         if (extension.applyProGuardMappingFilePath != null && !extension.applyProGuardMappingFilePath.isEmpty()) {
             def mappingFile = new File(extension.applyProGuardMappingFilePath);

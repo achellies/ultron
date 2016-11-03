@@ -16,7 +16,7 @@ dependencies {
     compile 'com.android.tools.build:gradle:2.2.0'
     compile 'org.ow2.asm:asm:5.0'
     compile 'org.javassist:javassist:3.20.0-GA'
-    compile 'net.sf.proguard:proguard-base:5.3.1'
+    compile 'net.sf.proguard:proguard-base:5.3.9'
     compile fileTree(dir: "./src/main/libs", include: ['*.jar'])
 }
 

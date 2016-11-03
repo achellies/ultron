@@ -5,7 +5,7 @@
 
 -dontusemixedcaseclassnames
 -dontskipnonpubliclibraryclasses
--verbose
+#-verbose
 
 # Optimization is turned off by default. Dex does not like code run
 # through the ProGuard optimize and preverify steps (and performs some

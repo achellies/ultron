@@ -1,0 +1,14 @@
+apply plugin: 'java'
+apply from: '../gradle_mvn_push.gradle'
+
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
