@@ -88,7 +88,7 @@ implements   MemberVisitor
             descriptor = descriptor.substring(0, descriptor.indexOf(')')+1);
         }
 
-        descriptor = ClassUtil.internalClassName(clazz.getName()) + descriptor;
+        descriptor = ClassUtil.internalClassName(clazz.getName()) + name + descriptor;
 
         // Get the name map, creating a new one if necessary.
         Map nameMap = retrieveNameMap(descriptorMap, descriptor);
